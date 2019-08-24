@@ -35,6 +35,31 @@ class DropboxGuzzleHttpClient implements DropboxHttpClientInterface
     }
 
     /**
+     * Return protected property client value
+     *
+     * @return GuzzleHttp\Client
+     */
+    public function getClient()
+    {
+        return $this->client;
+    }
+
+    /**
+     * Set Request class
+     *
+     * @param  string $url     URL/Endpoint to send the request to
+     * @param  string $method  Request Method
+     * @param  string|resource|StreamInterface $body Request Body
+     * @param  array  $headers Request Headers
+     *
+     * @return GuzzleHttp\Psr7\Request
+     */
+    public function setRequest($method, $url, $headers, $body)
+    {
+        return new Request($method, $url, $headers, $body);
+    }
+
+    /**
      * Send request to the server and fetch the raw response.
      *
      * @param  string $url     URL/Endpoint to send the request to
@@ -50,13 +75,16 @@ class DropboxGuzzleHttpClient implements DropboxHttpClientInterface
     public function send($url, $method, $body, $headers = [], $options = [])
     {
         //Create a new Request Object
-        $request = new Request($method, $url, $headers, $body);
+        $request = $this->setRequest($method, $url, $headers, $body);
 
         try {
             //Send the Request
-            $rawResponse = $this->client->send($request, $options);
+            $rawResponse = $this->getClient()->send($request, $options);
         } catch (BadResponseException $e) {
-            throw new DropboxClientException($e->getResponse()->getBody(), $e->getCode(), $e);
+            $rawResponse = $e->getResponse();
+            $bodyResponse = $rawResponse->getBody();
+
+            throw new DropboxClientException($bodyResponse, $e->getCode(), $e);
         } catch (RequestException $e) {
             $rawResponse = $e->getResponse();
 

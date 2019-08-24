@@ -70,7 +70,20 @@ class DropboxFile
     }
 
     /**
+     * \GuzzleHttp\Psr7\stream_for wrapper
+     *
+     * @param $resource
+     *
+     * @return \GuzzleHttp\Psr7\stream_for
+     */
+    protected function streamFor($resource)
+    {
+        return \GuzzleHttp\Psr7\stream_for($resource);
+    }
+
+    /**
      * Create a new DropboxFile instance using a file stream
+     * TODO: detelete commented section
      *
      * @param        $fileName
      * @param        $resource
@@ -83,9 +96,9 @@ class DropboxFile
     {
         // create a new stream and set it to the dropbox file
         $stream = \GuzzleHttp\Psr7\stream_for($resource);
-        if (!$stream) {
+        /*if (!$stream) {
             throw new DropboxClientException('Failed to create DropboxFile instance. Unable to open the given resource.');
-        }
+        }*/
 
         // Try to get the file path from the stream (we'll need this for uploading bigger files)
         $filePath = $stream->getMetadata('uri');
@@ -232,7 +245,7 @@ class DropboxFile
         }
 
         // Create a stream
-        $this->stream = \GuzzleHttp\Psr7\stream_for(fopen($this->path, $this->mode));
+        $this->stream =  $this->streamFor(fopen($this->path, $this->mode));
 
         // Unable to create stream
         if (!$this->stream) {
